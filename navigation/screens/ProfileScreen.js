@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 
-const ProfileScreen = () => {
+const ProfileScreen = ({navigation}) => {
+  
   return (
     <View styles={{}}>
       <Text>ProfileScreen</Text>

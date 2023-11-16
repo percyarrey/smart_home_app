@@ -6,22 +6,25 @@ import Ionicons from '@expo/vector-icons/Ionicons'
 import { Picker } from '@react-native-picker/picker';
 
 
-const PopupDialog = ({ visible, onSave, onCancel }) => {
-    const roomIcons = {
-        Living_Room: 'ios-home-outline',
-        Bedroom: 'ios-bed-outline',
-        Kitchen: 'ios-restaurant-outline',
-        Bathroom: 'ios-water-outline',
-        Corridor: 'ios-walk-outline',
+const RoomdevicesPopup = ({ visible, onSave, onCancel }) => {
+    const roomdevicesIcons = {
+        Television:'ios-tv-outline',
+        Laptop:'ios-laptop-outline',
+        Smartphone:'ios-phone-portrait-outline',
+        Speaker:'ios-volume-high-outline',
+        Camera:'ios-camera-outline',
+        Microwave:'ios-restaurant-outline',
+        Refrigerator:'ios-snow-outline',
+        WashingMachine:'ios-water-outline',
         Others: 'ios-albums-outline',
       };
-
     const [name, setName] = useState('');
     const [category, setCategory] = useState('');
 
     const handleSave = () => {
         if (name && category) {
-            var icon = roomIcons[category]
+            var icon = roomdevicesIcons[category]
+            console.log(icon)
             onSave({ name, icon });
             setName('');
             setCategory('');
@@ -38,35 +41,38 @@ const PopupDialog = ({ visible, onSave, onCancel }) => {
     const [showError, setShowError] = useState(false);
 
     return (
-        <Modal visible={visible} animationType="slide" transparent={true}>
+        <Modal visible={visible} animationType="fade" transparent={true} >
             <View style={styles.container}>
                 <View style={styles.dialog}>
-                    <Text style={styles.title}>Add a Room</Text>
+                    <Text style={styles.title}>Add a Device</Text>
 
                     {showError && <Text style={styles.errorText}>Please fill the Form</Text>}
 
                     <TextInput
                         style={styles.input}
-                        placeholder="Name of room"
+                        placeholder="Name of Device"
                         value={name}
                         onChangeText={setName}
                     />
                     <View style={{ flexDirection: 'row' }}>
                         <View style={{ alignItems: 'center', justifyContent: 'center', width: '10%' }}>
-                            {category && <Ionicons name={roomIcons[category]} size={24} color="#FF6C3B" />}
+                            {category && <Ionicons name={roomdevicesIcons[category]} size={24} color="#FF6C3B" />}
                         </View>
                         <Picker
                             style={{ width: '90%' }}
                             selectedValue={category}
                             onValueChange={setCategory}
                         >
-                            <Picker.Item label="Room Type" value="" />
-                            <Picker.Item label="Living Room" value="Living_Room" />
-                            <Picker.Item label="Bedroom" value="Bedroom" />
-                            <Picker.Item label="Kitchen" value="Kitchen" />
-                            <Picker.Item label="Bathroom" value="Bathroom" />
-                            <Picker.Item label="Corridor" value="Corridor" />
-                            <Picker.Item label="Others" value="others" />
+                            <Picker.Item label="Device Type" value="" />
+                            {
+                                Object.entries(roomdevicesIcons).map((e,index)=>{
+                                   keys = Object.keys(roomdevicesIcons)
+                                    
+                                    return(
+                                        (<Picker.Item key={index} label={keys[index]} value={keys[index]} />)
+                                    )
+                                })
+                            }
                         </Picker>
                     </View>
                     <View style={styles.buttonsContainer}>
@@ -118,4 +124,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default PopupDialog;
+export default RoomdevicesPopup;

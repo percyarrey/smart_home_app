@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, TouchableOpacity, Modal, StyleSheet, Button, } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
-import PopupDialog from './popupdialog';
+import PopupDialog from './RoomPopup';
+import RoomPopup from './RoomPopup';
 const styles = StyleSheet.create({
   fabContainer: {
     position: 'absolute',
@@ -44,7 +45,7 @@ const FloatingButton = ({onSave}) => {
         style={styles.fabButton}
         onPress={() => setPopupVisible(true)}
       >
-        <PopupDialog
+        <RoomPopup
           visible={popupVisible}
           onSave={handleSave}
           onCancel={handleCancel}

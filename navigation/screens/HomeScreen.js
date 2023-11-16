@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, Text, View, Image, TouchableOpacity, Alert } from 'react-native'
+import { FlatList, StyleSheet, Text, View, Image, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
 /* import { useNavigation } from '@react-navigation/native' */
 import React, { useEffect, useState } from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons'
@@ -11,48 +11,14 @@ import { profile } from '../../contants/images'
 /* FLOATING ACTION BUTTON */
 
 
-import FloatingButton from './component/FAB'
+import FloatingButton from '../../component/FAB'
 
 
 /* DATABASE */
 import * as SQLite from 'expo-sqlite';
-import { deleteData, fetchAllData, insertData } from './utils/cruddb';
+import { deleteData, fetchAllData, insertData, updateData } from '../../utils/crudRoom';
 
-const db = SQLite.openDatabase('smart_home.db'); // Replace 'your_database_name' with your preferred name
 
-// Function to execute SQL queries
-const executeSql = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        sql,
-        params,
-        (_, result) => resolve(result),
-        (_, error) => reject(error)
-      );
-    });
-  });
-};
-
-export const setupDatabase = async () => {
-  // Create tables or perform any other initialization tasks here
-  // Example:
-  const createTableQuery = `
-  CREATE TABLE IF NOT EXISTS rooms (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    icon TEXT,
-    numofDevices INTEGER DEFAULT 0
-  );
-`;
-
-  try {
-    await executeSql(createTableQuery);
-    console.log('Database setup complete');
-  } catch (error) {
-    console.log('Error setting up database:', error);
-  }
-};
 /* const rooms = [
   { name: 'Bathroom', icon: 'ios-water-outline', numOfDevices: 2 },
   { name: 'Living Room', icon: 'ios-tv-outline', numOfDevices: 4 },
@@ -61,26 +27,37 @@ export const setupDatabase = async () => {
   { name: 'Study Room', icon: 'ios-desktop-outline', numOfDevices: 1 },
 ]; */
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({ navigation }) => {
   const [active, setAcive] = useState(0)
+  const [loading, setLoading] = useState(true)
   const [rooms, setRooms] = useState([])
   useEffect(() => {
-    setupDatabase();
     (
       async () => {
-        setRooms(await fetchAllData())
+        await fetchAllData()
+          .then((res) => {
+            setRooms(res)
+          })
+          .finally(() => {
+            setLoading(false)
+          })
+
       }
     )()
   }, []);
 
   const handleSave = async (data) => {
-    var newData = { name: data.name, icon: data.icon, numOfDevices: 0 }
-    insertData(newData)
-    setRooms(await fetchAllData())
+    /*  var newData = { name: data.name, icon: data.icon } */
+    insertData(data);
+
+    await fetchAllData()
+      .then((res) => {
+        setRooms(res)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
-
-
-
 
   const renderRoomItem = (item, index) => {
     const handleLongPress = () => {
@@ -110,7 +87,7 @@ const HomeScreen = ({navigation}) => {
 
     const handleShortPress = () => {
       setAcive(index);
-      navigation.navigate("RoomDetails")
+      navigation.navigate("RoomDevices", { room: item })
     }
     return (
       <View style={{ flex: 1, paddingHorizontal: 10, paddingTop: 10, maxWidth: '50%' }}>
@@ -162,24 +139,23 @@ const HomeScreen = ({navigation}) => {
         </View>
       </View>
 
-      <View style={styles.horizontalLine} />
+      <View style={styles.horizontalLine} >
+
+      </View>
       {/* ROOMS */}
-      {/* <ScrollView>
-        <View style={{ flex: 1 }}>
-            {rooms.map((room, index) => (
-            <View key={index} style={styles.gridItem}>
-              {renderRoomItem(room)}
-            </View>
-          ))}
-        </View>
-      </ScrollView> */}
       <Text style={{ paddingBottom: 8, opacity: 0.4, textAlign: 'center', fontSize: 12, paddingTop: 4 }}>Press and hold to <Text style={{ fontFamily: 'rbold' }}>Delete</Text></Text>
-      <FlatList
-        data={rooms}
-        numColumns={2}
-        renderItem={({ item, index }) => (renderRoomItem(item, index))}
-        keyExtractor={(item, index) => (index)}
-      />
+      {
+        loading ?
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color='#FF6C3B' />
+          </View> :
+          <FlatList
+            data={rooms}
+            numColumns={2}
+            renderItem={({ item, index }) => (renderRoomItem(item, index))}
+            keyExtractor={(item, index) => (index)}
+          />
+      }
       <FloatingButton onSave={handleSave} />
     </View>
   )
@@ -189,8 +165,8 @@ export default HomeScreen
 
 const styles = StyleSheet.create({
   horizontalLine: {
-    borderBottomColor: '#B8B8BB',
-    borderBottomWidth: 0.2,
+    borderBottomColor: '#CDCDCD',
+    borderBottomWidth: 1,
     marginTop: 32,
   },
 })
