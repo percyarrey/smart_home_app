@@ -1,19 +1,27 @@
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, Button, Alert, Animated } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, Button, Alert } from 'react-native'
+import React, { useEffect, useState, } from 'react'
 import { useRoute } from '@react-navigation/native';
 
 import { Ionicons } from '@expo/vector-icons';
 
-
-import { fetchAllData, insertData, deleteData, fetchById } from '../utils/crudRoomDevices';
+/* CRUD OFFLINE DB */
+import { insertData, deleteData, fetchById, updateData } from '../utils/crudRoomDevices';
 import RoomdevicesPopup from '../component/RoomdevicesPopup';
+
+/* COMPONENT */
+import RoomDevicesComp from '../component/roomDevicesComp';
+
 
 const RoomDevices = ({ navigation }) => {
 
-  const [active, setAcive] = useState(0)
+
+
+  /* ACTIVE AND ROOM */
+  const [activeItem, setActiveItem] = useState([])
 
   const route = useRoute();
   const { room } = route.params;
+
 
   const [popupVisible, setPopupVisible] = useState(false);
   const handleSave = async (data) => {
@@ -26,6 +34,7 @@ const RoomDevices = ({ navigation }) => {
     await fetchById(room.id)
       .then((res) => {
         setRoomItems(res)
+        setActiveItem(res[0])
       })
       .finally(() => {
         setLoading(false)
@@ -65,17 +74,18 @@ const RoomDevices = ({ navigation }) => {
   /* DATABASE */
   const [roomItems, setRoomItems] = useState([])
   const [loading, setLoading] = useState(true)
+
   useEffect(() => {
     (
       async () => {
         await fetchById(room.id)
           .then((res) => {
             setRoomItems(res)
+            setActiveItem(res[0])
           })
           .finally(() => {
             setLoading(false)
           })
-
       }
     )()
   }, [])
@@ -106,6 +116,7 @@ const RoomDevices = ({ navigation }) => {
               await fetchById(room.id)
                 .then((res) => {
                   setRoomItems(res)
+                  setActiveItem[0]
                 })
                 .finally(() => {
                   setLoading(false)
@@ -119,37 +130,20 @@ const RoomDevices = ({ navigation }) => {
     };
 
     return (
-      <TouchableOpacity onPress={() => { setAcive(index) }} onLongPress={handleLongPress}>
+      <TouchableOpacity onPress={() => { setActiveItem(item) }} onLongPress={handleLongPress}>
         <View style={styles.roomItem}>
-          <View style={styles.iconContainer(index, active)}>
-            <Ionicons name={item.icon} size={24} color={index === active ? 'white' : '#504F4F'} />
+          <View style={styles.iconContainer(item.id, activeItem.id)}>
+            <Ionicons name={item.icon} size={24} color={item.id === activeItem.id ? 'white' : '#504F4F'} />
+            
+            {item.power!=0 && item.id!==activeItem.id && <View style={[styles.roomPower,{backgroundColor:'#FF6C3B'}]}></View>}
           </View>
-          <Text style={{ marginTop: 4, color: index === active ? '#FF6C3B' : 'grey' }}>{item.name}</Text>
+          <Text style={{ marginTop: 4, color: item.id === activeItem.id ? '#FF6C3B' : 'grey' }}>{item.name}</Text>
         </View>
       </TouchableOpacity>
     )
   };
 
 
-  /* ANIMATE */
-  const sizeAnim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    /* Animated */
-    Animated.loop(
-      Animated.timing(sizeAnim, {
-        toValue: 1,
-        duration: 3000,
-        useNativeDriver: false, // Set useNativeDriver to false
-        isInteraction: true,
-      })
-    ).start()
-
-  }, [sizeAnim]);
-
-  const animateSize = sizeAnim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [1, 1.08, 1],
-  });
   return (
 
     <View style={{ paddingLeft: 15, flex: 1, backgroundColor: 'white' }}>
@@ -174,6 +168,9 @@ const RoomDevices = ({ navigation }) => {
                       renderItem={({ item, index }) => (renderRoomItem(index, item))}
                       contentContainerStyle={styles.container}
                     />
+                    <View style={styles.horizontalLine} >
+
+                    </View>
                   </View>
                   :
                   <View style={{ height: 60, alignItems: 'center', justifyContent: 'center' }}>
@@ -183,35 +180,17 @@ const RoomDevices = ({ navigation }) => {
             </View>
             {/* MAIN */}
             <View style={{ flex: 1, paddingRight: 15, }}>
-              <View style={styles.horizontalLine} >
-                
+              <View style={{ flex: 1 }}>
+                {/* COMPONENT */}
+                {
+                  roomItems.length != 0 &&
+                  <RoomDevicesComp activeItem={activeItem} otherItems={roomItems.filter(e => (e.id !== activeItem.id))} setRoomItems={setRoomItems} />
+                }
               </View>
 
-              <View style={{ flex: 1, position: 'relative', justifyContent: 'center' }}>
-                <TouchableOpacity activeOpacity={0.9}>
-                  <View style={{flexGrow:1,justifyContent:'center'}}>
-                    <Animated.View
-                      style={[
-                        styles.PowerbtnBorder,
-                        {
-                          transform: [{ scale: animateSize }], // Use transform with scale instead of width and height
-                        },
-                      ]}
-                    >
-                    </Animated.View>
-                  </View>
-                  <View style={{ flex: 1, position: 'absolute', width: '100%', height: '100%', justifyContent: 'center' }}>
-                    <View style={styles.PowerbtnBorder2}>
-                      <View style={styles.PowerbtnBorder3}>
-                        <Ionicons name='power-outline' color={'white'} size={80} />
 
-                      </View>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              </View>
-
-              <View style={{ justifyContent: 'flex-end', paddingBottom: 30 }}>
+              <View style={{ justifyContent: 'flex-end', paddingBottom: 30, }}>
+                {/* ADD A DEVICE */}
                 <View style={{ borderRadius: 10, overflow: 'hidden' }}>
                   <RoomdevicesPopup
                     visible={popupVisible}
@@ -237,6 +216,16 @@ const styles = StyleSheet.create({
   roomItem: {
     alignItems: 'center',
     marginRight: 19,
+    position:'relative'
+
+  },
+  roomPower: {
+    position:'absolute',
+    height:15,
+    width:15,
+    borderRadius:100,
+    top:2,
+    right:2
 
   },
   iconContainer: (index, active) => ({
@@ -250,62 +239,7 @@ const styles = StyleSheet.create({
   horizontalLine: {
     borderBottomColor: '#CDCDCD',
     borderBottomWidth: 1,
-    marginTop: 32,
+    marginTop: 30,
   },
-  PowerbtnBorder: {
-    width: '70%',
-    height: '70%',
-    maxHeight: 260,
-    maxWidth: 260,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 1000,
-    shadowColor: 'black',
-    shadowOpacity: 0.2,
-    shadowOffset: {
-      height: 20,
-      width: 20,
-    },
-    elevation: 10,
-    shadowRadius: 5,
-    marginStart: 'auto',
-    marginRight: 'auto',
-    borderColor: '#F8F8F8',
-    borderWidth: 1,
-    backgroundColor: '#F8F8F8',
 
-  },
-  PowerbtnBorder2: {
-    width: '57%',
-    height: '57%',
-    maxHeight: 260,
-    maxWidth: 260,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 1000,
-    shadowColor: 'black',
-    shadowOpacity: 1,
-    shadowOffset: {
-      height: 20,
-      width: 20,
-    },
-    elevation: 10,
-    shadowRadius: -10,
-    marginStart: 'auto',
-    marginRight: 'auto',
-    backgroundColor: '#F77718',
-  },
-  PowerbtnBorder3: {
-    width: '70%',
-    height: '70%',
-    maxHeight: 260,
-    maxWidth: 260,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 1000,
-    shadowColor: 'black',
-    marginStart: 'auto',
-    marginRight: 'auto',
-    backgroundColor: '#FF6C3B'
-  }
 });

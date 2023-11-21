@@ -73,15 +73,22 @@ export const fetchAllData = async () => {
     SELECT COUNT(*) as count FROM roomdevices WHERE roomid = ?;
   `;
 
+  const ondevicesQuery = `
+    SELECT COUNT(*) as ondevices FROM roomdevices WHERE roomid = ? AND power <> ?;
+  `;
+
   try {
     const roomsResult = await executeSql(roomsQuery);
     const rooms = roomsResult.rows._array;
 
     const data = await Promise.all(
       rooms.map(async (room) => {
-        const result = await executeSql(roomdevicesQuery, [room.id]);
+        var result = await executeSql(roomdevicesQuery, [room.id]);
         const count = result.rows._array[0].count;
+        result = await executeSql(ondevicesQuery, [room.id,0]);
+        const onDevices = result.rows._array[0].ondevices;
         room.numofDevices = count;
+        room.onDevices = onDevices;
         return room;
       })
     );

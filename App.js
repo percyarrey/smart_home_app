@@ -1,6 +1,6 @@
 import * as Font from 'expo-font';
 import { useState, useEffect } from 'react';
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView ,View} from "react-native-safe-area-context";
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer, } from '@react-navigation/native';
@@ -11,6 +11,12 @@ import Tabs from './navigation/Tabs';
 
 /* ICONS */
 /* import { Ionicons } from '@expo/vector-icons'; */
+
+/* ASYNC STORAGE */
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+/* LOGIN SCREENS */
+import LoginScreen from './screens/login/login.screen';
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -36,19 +42,42 @@ export default function App() {
     setFontsLoaded(true);
   }
 
+  const [hasLoggedIn, setHasLoggedIn] = useState(null);
+
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
+
+  const checkLoginStatus = async () => {
+    const value = await AsyncStorage.getItem('hasLoggedIn');
+    setHasLoggedIn(value === 'true');
+  };
+
+  if (hasLoggedIn === null) {
+    return null;
+  }
+
   if (!fontsLoaded) return null;
 
-  return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name='Tabs' component={Tabs} options={{ headerShown: false }} />
-          <Stack.Screen name='RoomDevices' component={RoomDevices} options={{
-            headerShadowVisible: false,
-            headerTitleStyle: { color: 'black', fontFamily: 'rbold' }
-          }} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SafeAreaView>
-  );
+  if (hasLoggedIn) {
+    return (
+      <SafeAreaView style={{ flex: 1 }}>
+        <NavigationContainer>
+          <Stack.Navigator>
+            {!hasLoggedIn && (
+              <Stack.Screen name="LoginScreen" component={LoginScreen} />
+            )}
+            <Stack.Screen name="LoginScreen" component={LoginScreen} />
+            <Stack.Screen name='Tabs' component={Tabs} options={{ headerShown: false }} />
+            <Stack.Screen name='RoomDevices' component={RoomDevices} options={{
+              headerShadowVisible: false,
+              headerTitleStyle: { color: 'black', fontFamily: 'rbold' }
+            }} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaView>
+    );
+  } else {
+    return <LoginScreen />
+  }
 }

@@ -100,18 +100,18 @@ export const fetchById = async (id) => {
 
 export const updateData = async (id, newData) => {
   setupDatabase()
-  const { name, icon, numOfDevices } = newData;
+  const { roomid, name, power, icon } = newData;
 
-  const updateQuery = `
-      UPDATE roomdevices SET name = ?, icon = ?, numOfDevices = ? WHERE id = ?;
-    `;
+const updateQuery = `
+  UPDATE roomdevices SET roomid = ?, name = ?, power = ?, icon = ? WHERE id=?
+`;
 
-  try {
-    await executeSql(updateQuery, [id, name, icon, numOfDevices]);
-    console.log('Data updated successfully');
-  } catch (error) {
-    console.log('Error updating data:', error);
-  }
+try {
+  await executeSql(updateQuery, [roomid, name, power, icon,id]);
+  console.log('Data updated successfully');
+} catch (error) {
+  console.error('Error updating data:', error);
+}
 };
 
 export const deleteData = async (id) => {
