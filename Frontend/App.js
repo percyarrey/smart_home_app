@@ -68,7 +68,7 @@ export default function App() {
             {!hasLoggedIn && (
               <Stack.Screen name="LoginScreen" component={LoginScreen}  options={{ headerShown: false }}/>
             )}
-            <Stack.Screen name="LoginScreen" component={LoginScreen} />
+            <Stack.Screen name="LoginScreen" component={LoginScreen}  options={{ headerShown: false }}/>
             <Stack.Screen name='Tabs' component={Tabs} options={{ headerShown: false }} />
             <Stack.Screen name='RoomDevices' component={RoomDevices} options={{
               headerShadowVisible: false,
