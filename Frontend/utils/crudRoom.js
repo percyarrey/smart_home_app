@@ -21,7 +21,7 @@ export const setupDatabase = async () => {
   // Create tables or perform any other initialization tasks here
   // Example:
   const roomsTableQuery = `
-  CREATE TABLE IF NOT EXISTS roomdevices (
+  CREATE TABLE IF NOT EXISTS rooms (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT,
     icon TEXT
@@ -33,9 +33,9 @@ export const setupDatabase = async () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       roomid INTEGER,
       name TEXT,
-      power INTEGER DEFAULT 0,
+      power INTEGER,
       icon TEXT,
-      FOREIGN KEY (roomid) REFERENCES roomdevices(id) ON DELETE CASCADE
+      FOREIGN KEY (roomid) REFERENCES rooms(id) ON DELETE CASCADE
     );
     `;
 
@@ -50,14 +50,14 @@ export const setupDatabase = async () => {
 
 export const insertData = async (data) => {
   setupDatabase()
-  const { roomid,name,power,icon} = data
+  const { name, icon } = data
   const insertQuery = `
-      INSERT INTO roomdevices (roomid, name, power, icon)
-      VALUES (?, ?, ?,?);
+      INSERT INTO rooms (name, icon)
+      VALUES (?, ?);
     `;
 
   try {
-    await executeSql(insertQuery, [roomid,name,power, icon]);
+    await executeSql(insertQuery, [name, icon]);
     console.log('Data inserted successfully');
   } catch (error) {
     console.log('Error inserting data:', error);
@@ -65,14 +65,34 @@ export const insertData = async (data) => {
 };
 
 export const fetchAllData = async () => {
-  setupDatabase()
-  const selectQuery = `
-      SELECT * FROM roomdevices;
-    `;
+  setupDatabase();
+  const roomsQuery = `
+    SELECT * FROM rooms;
+  `;
+  const roomdevicesQuery = `
+    SELECT COUNT(*) as count FROM roomdevices WHERE roomid = ?;
+  `;
+
+  const ondevicesQuery = `
+    SELECT COUNT(*) as ondevices FROM roomdevices WHERE roomid = ? AND power <> ?;
+  `;
 
   try {
-    const result = await executeSql(selectQuery);
-    const data = result.rows._array;
+    const roomsResult = await executeSql(roomsQuery);
+    const rooms = roomsResult.rows._array;
+
+    const data = await Promise.all(
+      rooms.map(async (room) => {
+        var result = await executeSql(roomdevicesQuery, [room.id]);
+        const count = result.rows._array[0].count;
+        result = await executeSql(ondevicesQuery, [room.id,0]);
+        const onDevices = result.rows._array[0].ondevices;
+        room.numofDevices = count;
+        room.onDevices = onDevices;
+        return room;
+      })
+    );
+
     console.log('Fetched data:', data);
     return data;
   } catch (error) {
@@ -84,7 +104,7 @@ export const fetchAllData = async () => {
 export const fetchById = async (id) => {
   setupDatabase()
   const selectQuery = `
-    SELECT * FROM roomdevices WHERE roomid=?;
+    SELECT FROM rooms WHERE id=?;
   `;
 
   try {
@@ -100,14 +120,15 @@ export const fetchById = async (id) => {
 
 export const updateData = async (id, newData) => {
   setupDatabase()
-  const { name, icon, numOfDevices } = newData;
+  const { name, icon } = newData;
 
   const updateQuery = `
-      UPDATE roomdevices SET name = ?, icon = ?, numOfDevices = ? WHERE id = ?;
+      UPDATE rooms SET name = ?, icon = ? WHERE id = ?
+      VALUES(?,?,?);
     `;
 
   try {
-    await executeSql(updateQuery, [id, name, icon, numOfDevices]);
+    await executeSql(updateQuery, [ name, icon, id]);
     console.log('Data updated successfully');
   } catch (error) {
     console.log('Error updating data:', error);
@@ -117,7 +138,7 @@ export const updateData = async (id, newData) => {
 export const deleteData = async (id) => {
   setupDatabase()
   const deleteQuery = `
-      DELETE FROM roomdevices WHERE id = ?;
+      DELETE FROM rooms WHERE id = ?;
     `;
 
   try {

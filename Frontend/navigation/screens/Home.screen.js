@@ -3,6 +3,7 @@ import { FlatList, StyleSheet, Text, View, Image, TouchableOpacity, Alert, Activ
 import React, { useEffect, useState } from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { profile } from '../../contants/images'
+import { useIsFocused } from '@react-navigation/native';
 
 /* PAGES *
  
@@ -15,8 +16,7 @@ import FloatingButton from '../../component/FAB'
 
 
 /* DATABASE */
-import * as SQLite from 'expo-sqlite';
-import { deleteData, fetchAllData, insertData, updateData } from '../../utils/crudRoom';
+import { deleteData, fetchAllData, insertData } from '../../utils/crudRoom';
 
 
 /* const rooms = [
@@ -31,20 +31,30 @@ const HomeScreen = ({ navigation }) => {
   const [active, setAcive] = useState(0)
   const [loading, setLoading] = useState(true)
   const [rooms, setRooms] = useState([])
-  useEffect(() => {
-    (
-      async () => {
-        await fetchAllData()
-          .then((res) => {
-            setRooms(res)
-          })
-          .finally(() => {
-            setLoading(false)
-          })
 
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        setLoading(true);
+        const res = await fetchAllData();
+        setRooms(res);
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      } finally {
+        setLoading(false);
       }
-    )()
-  }, []);
+    };
+
+    if (isFocused) {
+      fetchRooms();
+    }
+
+    return () => {
+      // Cleanup code if needed
+    };
+  }, [isFocused]);
 
   const handleSave = async (data) => {
     /*  var newData = { name: data.name, icon: data.icon } */
@@ -92,15 +102,23 @@ const HomeScreen = ({ navigation }) => {
     return (
       <View style={{ flex: 1, paddingHorizontal: 10, paddingTop: 10, maxWidth: '50%' }}>
         <TouchableOpacity onLongPress={handleLongPress} onPress={handleShortPress} >
-          <View style={{ flex: 1, height: 150, borderRadius: 15, borderColor: '#C4C4C4', borderWidth: 0.6, padding: 9, shadowColor: '#C4C4C4', backgroundColor: index === active ? '#FF6C3B' : 'transparent' }}>
+          <View style={{ flex: 1, height: 150, borderRadius: 15, borderColor: '#C4C4C4', borderWidth: 0.6, padding: 9, shadowColor: '#C4C4C4', position: 'relative', backgroundColor: index === active ? '#FF6C3B' : 'transparent' }}>
             <View style={{ flex: 1, justifyContent: 'space-between' }}>
               <Ionicons name={item.icon} color={index === active ? 'white' : '#FF6C3B'} size={35} />
               <View>
                 <Text style={{ fontFamily: 'rbold', fontSize: 20, color: index === active ? 'white' : 'black' }}>{item.name}</Text>
-                <Text style={{ opacity: 0.7, fontWeight: '500', fontFamily: 'rregular', color: index === active ? 'white' : 'black' }}>{item.numofDevices === 0 ? 'No Device Found' : item.numofDevices === 1 ? '1 device' : `${item.numofDevices} devices`}</Text>
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={{ opacity: 0.7, fontWeight: '500', fontFamily: 'rregular', color: index === active ? 'white' : 'black' }}>{item.numofDevices === 0 ? 'No Device Found' : item.numofDevices === 1 ? '1 device' : `${item.numofDevices} devices`}</Text>
+                </View>
               </View>
             </View>
           </View>
+          {
+            item.onDevices !== 0 &&
+            <View style={[styles.roomOnDevices, { backgroundColor: index === active ? 'white' : '#FF6C3B', }]}>
+              <Text style={{ color: index === active ? '#FF6C3B' : 'white', fontFamily: 'rbold', fontSize: 18.5 }}>{item.onDevices}</Text>
+            </View>
+          }
         </TouchableOpacity>
       </View>
     )
@@ -169,4 +187,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     marginTop: 32,
   },
+  roomOnDevices: {
+    position: 'absolute',
+    right: 6,
+    top: 5,
+    width: 25,
+    height: 25,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
 })
