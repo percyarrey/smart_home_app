@@ -35,7 +35,6 @@ const RoomDevices = ({ navigation }) => {
       .then((res) => {
         setActiveItem(res[0])
         setRoomItems(res)
-        setActiveItem(res[0])
       })
       .finally(() => {
         setLoading(false)
@@ -83,11 +82,7 @@ const RoomDevices = ({ navigation }) => {
           .then((res) => {
             setActiveItem(res[0])
             setRoomItems(res)
-<<<<<<< HEAD:Frontend/screens/RoomDevices.js
 
-=======
-            setActiveItem(res[0])
->>>>>>> 0069921447eb449a148f36a9d3b68f5d70c12d5e:screens/RoomDevices.js
           })
           .finally(() => {
             setLoading(false)
@@ -140,13 +135,8 @@ const RoomDevices = ({ navigation }) => {
         <View style={styles.roomItem}>
           <View style={styles.iconContainer(item.id, activeItem.id)}>
             <Ionicons name={item.icon} size={24} color={item.id === activeItem.id ? 'white' : '#504F4F'} />
-<<<<<<< HEAD:Frontend/screens/RoomDevices.js
 
             {item.power != 0 && item.id !== activeItem.id && <View style={[styles.roomPower, { backgroundColor: '#FF6C3B' }]}></View>}
-=======
-            
-            {item.power!=0 && item.id!==activeItem.id && <View style={[styles.roomPower,{backgroundColor:'#FF6C3B'}]}></View>}
->>>>>>> 0069921447eb449a148f36a9d3b68f5d70c12d5e:screens/RoomDevices.js
           </View>
           <Text style={{ marginTop: 4, color: item.id === activeItem.id ? '#FF6C3B' : 'grey' }}>{item.name}</Text>
         </View>
@@ -227,7 +217,6 @@ const styles = StyleSheet.create({
   roomItem: {
     alignItems: 'center',
     marginRight: 19,
-<<<<<<< HEAD:Frontend/screens/RoomDevices.js
     position: 'relative'
 
   },
@@ -238,18 +227,6 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     top: 2,
     right: 2
-=======
-    position:'relative'
-
-  },
-  roomPower: {
-    position:'absolute',
-    height:15,
-    width:15,
-    borderRadius:100,
-    top:2,
-    right:2
->>>>>>> 0069921447eb449a148f36a9d3b68f5d70c12d5e:screens/RoomDevices.js
 
   },
   iconContainer: (index, active) => ({
