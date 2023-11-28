@@ -8,13 +8,12 @@ import logo from '../../assets/icon.png'
 
 /* ICONS */
 import { Ionicons } from '@expo/vector-icons'
-
-/* BACKEND */
-import Config from 'react-native-config'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const RegisterScreen = ({ navigation }) => {
-
+  const [loading, setLoading] = useState(false)
+  
   useEffect(() => {
     navigation.setOptions({
       headerShown: false
@@ -23,11 +22,10 @@ const RegisterScreen = ({ navigation }) => {
 
   const [showPassword, setShowPassword] = useState(true)
 
-  const [showError, setShowError] = useState(false)
+  const [showError, setShowError] = useState('')
 
   const [data, setData] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     password: ''
   })
@@ -40,9 +38,10 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   const handleRegister = async () => {
-    if (data.email && data.firstName && data.lastName && data.password) {
+    if (data.email && data.name && data.password) {
+      setLoading(true)
       try {
-        const response = await fetch(`http://192.168.190.243:3000/register`, {
+        const response = await fetch(`http://192.168.8.100:3000/register`, {
           method: 'POST',
           body: JSON.stringify(data),
           headers: {
@@ -50,20 +49,30 @@ const RegisterScreen = ({ navigation }) => {
           },
         });
         const res = await response.json()
-        console.log(res)
-        // Handle successful response
+        if (res.success == true) {
+          ToastAndroid.show('User Register Successfully', ToastAndroid.SHORT);
+          await AsyncStorage.setItem('hasLoggedIn', JSON.stringify(data));
+          navigation.navigate('LoginScreen');
 
-        ToastAndroid.show('User Register Successfully', ToastAndroid.SHORT);
-        
-        navigation.navigate('LoginScreen');
-        
+        } else {
+          const errorResponse = res.error;
+          const jsonStartIndex = errorResponse.indexOf('{');
+          const jsonString = errorResponse.substring(jsonStartIndex);
+
+          // Parse the JSON string
+          const jsonResponse = JSON.parse(jsonString);
+          const errorMessage = jsonResponse.error.message;
+          setShowError(errorMessage)
+          ToastAndroid.show('Failed to register User', ToastAndroid.SHORT);
+        }
       } catch (error) {
-        console.log('Network request failed:', error.message);
+        console.log(error)
         ToastAndroid.show('Failed to register User !TRY AGAIN', ToastAndroid.SHORT);
       }
+        setLoading(false)
     }
     else {
-      setShowError(true)
+      setShowError('Enter All Required Fields')
     }
   };
 
@@ -78,29 +87,17 @@ const RegisterScreen = ({ navigation }) => {
       </View>
       <ScrollView style={{ marginTop: 30 }}>
         <View>
-          <Text style={{ fontSize: 28, fontFamily: 'rbold' }}>Register</Text>
+          <Text style={{ fontSize: 28, fontFamily: 'rbold' }}>REGISTER</Text>
         </View>
-
-        {
-          showError && 
-          <View>
-            <Text style={{ color: 'red', textAlign: 'center', }}>Enter All Required Fields</Text>
-          </View>
-        }
-
-        <View style={{ marginTop: 20 }}>
-          <TextInput
-            style={{ backgroundColor: 'white', height: 50, borderRadius: 3 }}
-            placeholder='First Name'
-            onChangeText={value => handleChange('firstName', value)}
-          />
+        <View>
+          <Text style={{ color: 'red', textAlign: 'center', }}>{showError}</Text>
         </View>
 
         <View style={{ marginTop: 20 }}>
           <TextInput
             style={{ backgroundColor: 'white', height: 50, borderRadius: 3 }}
-            placeholder='Last Name'
-            onChangeText={value => handleChange('lastName', value)}
+            placeholder='Name'
+            onChangeText={value => handleChange('name', value)}
           />
         </View>
 
@@ -141,7 +138,7 @@ const RegisterScreen = ({ navigation }) => {
         </View>
 
         <View style={{ marginTop: 20 }}>
-          <Button title="Register" onPress={handleRegister} color={'#FF6C3B'} />
+          <Button title={loading ? "Loading" : "Register"} onPress={handleRegister} color={'#FF6C3B'} />
         </View>
         <View style={{ justifyContent: 'center', flexDirection: 'row', marginTop: 20, opacity: 0.65, gap: 8, marginBottom: 20 }}>
           <Text style={{ fontFamily: 'rmedium' }}>Already registered?</Text>

@@ -51,7 +51,7 @@ export default function App() {
 
   const checkLoginStatus = async () => {
     const value = await AsyncStorage.getItem('hasLoggedIn');
-    setHasLoggedIn(value === 'true');
+    setHasLoggedIn(value);
   };
 
   if (hasLoggedIn === null) {

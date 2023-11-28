@@ -3,20 +3,15 @@ import { Text, View, Button, Image, TextInput, ScrollView, TouchableOpacity, Toa
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-/* ASYNC STORAGE */
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 /* IMAGE */
 import logo from '../../assets/icon.png'
 
 /* ICONS */
 import { Ionicons } from '@expo/vector-icons'
 
-/* BACKEND */
-import Config from 'react-native-config'
 
-
-const RegisterScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation }) => {
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     navigation.setOptions({
@@ -24,16 +19,9 @@ const RegisterScreen = ({ navigation }) => {
     })
   })
 
-  /* const handleLogin = async () => {
-    // Store the login flag as 'true' in AsyncStorage
-    await AsyncStorage.setItem('hasLoggedIn', 'true');
-    // Navigate to the main page
-    navigation.navigate('Tabs');
-  }; */
-
   const [showPassword, setShowPassword] = useState(true)
 
-  const [showError, setShowError] = useState(false)
+  const [showError, setShowError] = useState('')
 
   const [data, setData] = useState({
     email: '',
@@ -47,10 +35,11 @@ const RegisterScreen = ({ navigation }) => {
     }));
   };
 
-  const handleLogin = async () => {
-    if (data.email&& data.password) {
+  const handlelogin = async () => {
+    if (data.email && data.password) {
+      setLoading(true)
       try {
-        const response = await fetch(`http://192.168.190.243:3000/login`, {
+        const response = await fetch(`http://192.168.8.100:3000/login`, {
           method: 'POST',
           body: JSON.stringify(data),
           headers: {
@@ -58,17 +47,28 @@ const RegisterScreen = ({ navigation }) => {
           },
         });
         const res = await response.json()
-        console.log(res)
-        // Handle successful response
+        if (res.success == true) {
+          ToastAndroid.show('User login Successfully', ToastAndroid.SHORT);
+          navigation.navigate('Tabs');
 
-        ToastAndroid.show('User Login Successfully', ToastAndroid.SHORT);
+        } else {
+          const errorResponse = res.error;
+          const jsonStartIndex = errorResponse.indexOf('{');
+          const jsonString = errorResponse.substring(jsonStartIndex);
+
+          // Parse the JSON string
+          const jsonResponse = JSON.parse(jsonString);
+          const errorMessage = jsonResponse.error.message;
+          setShowError(errorMessage)
+          ToastAndroid.show('Failed to login User', ToastAndroid.SHORT);
+        }
       } catch (error) {
-        console.log('Network request failed:', error.message);
+        console.log(error)
         ToastAndroid.show('Failed to login User !TRY AGAIN', ToastAndroid.SHORT);
       }
     }
     else {
-      setShowError(true)
+      setShowError('Enter All Required Fields')
     }
   };
 
@@ -83,16 +83,11 @@ const RegisterScreen = ({ navigation }) => {
       </View>
       <ScrollView style={{ marginTop: 30 }}>
         <View>
-          <Text style={{ fontSize: 28, fontFamily: 'rbold' }}>Login</Text>
+          <Text style={{ fontSize: 28, fontFamily: 'rbold' }}>LOGIN</Text>
         </View>
-
-        {
-          showError && 
-          <View>
-            <Text style={{ color: 'red', textAlign: 'center', }}>Enter All Required Fields</Text>
-          </View>
-        }
-
+        <View>
+          <Text style={{ color: 'red', textAlign: 'center', }}>{showError}</Text>
+        </View>
 
         <View style={{ marginTop: 20 }}>
           <TextInput
@@ -131,10 +126,10 @@ const RegisterScreen = ({ navigation }) => {
         </View>
 
         <View style={{ marginTop: 20 }}>
-          <Button title="Login" onPress={handleLogin} color={'#FF6C3B'} />
+          <Button title={loading ? "Loading" : "login"} onPress={handlelogin} color={'#FF6C3B'} />
         </View>
         <View style={{ justifyContent: 'center', flexDirection: 'row', marginTop: 20, opacity: 0.65, gap: 8, marginBottom: 20 }}>
-          <Text style={{ fontFamily: 'rmedium' }}>Do not have an Account?</Text>
+          <Text style={{ fontFamily: 'rmedium' }}>Don't Have an Account?</Text>
           <TouchableOpacity activeOpacity={0.8} onPress={() => { navigation.navigate('RegisterScreen'); }}>
             <Text style={{ color: '#FF6C3B', fontFamily: 'rmedium' }}>Register</Text>
           </TouchableOpacity>
@@ -144,4 +139,4 @@ const RegisterScreen = ({ navigation }) => {
   );
 };
 
-export default RegisterScreen;
+export default LoginScreen;
