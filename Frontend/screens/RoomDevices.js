@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, Button, Alert } from 'react-native'
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, Button, Alert, ToastAndroid } from 'react-native'
 import React, { useEffect, useState, } from 'react'
 import { useRoute } from '@react-navigation/native';
 
@@ -30,6 +30,7 @@ const RoomDevices = ({ navigation }) => {
     console.log(data)
     setPopupVisible(false);
     insertData(data);
+    ToastAndroid.show(data.name + ' device added Succesfully', ToastAndroid.SHORT);
 
     await fetchById(room.id)
       .then((res) => {
@@ -114,6 +115,7 @@ const RoomDevices = ({ navigation }) => {
             onPress: async () => {
               // Perform delete action here
               deleteData(item.id)
+              ToastAndroid.show(item.name + ' deleted Succesfully', ToastAndroid.SHORT);
               await fetchById(room.id)
                 .then((res) => {
                   setRoomItems(res)

@@ -1,16 +1,17 @@
-import React, { useEffect ,useState} from 'react';
-import { Text, View, Button, Image, TextInput, ScrollView,TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Text, View, Button, Image, TextInput, ScrollView, TouchableOpacity, ToastAndroid } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-/* ASYNC STORAGE */
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /* IMAGE */
 import logo from '../../assets/icon.png'
 
 /* ICONS */
 import { Ionicons } from '@expo/vector-icons'
+
+/* BACKEND */
+import Config from 'react-native-config'
+
 
 const RegisterScreen = ({ navigation }) => {
 
@@ -20,23 +21,15 @@ const RegisterScreen = ({ navigation }) => {
     })
   })
 
-  const handleLogin = async () => {
-    // Store the login flag as 'true' in AsyncStorage
-    await AsyncStorage.setItem('hasLoggedIn', 'true');
-    // Navigate to the main page
-    navigation.navigate('Tabs');
-  };
-
-  const handleRegister = async () => {
-    // Navigate to the main page
-    navigation.navigate('LoginScreen');
-  };
-
   const [showPassword, setShowPassword] = useState(true)
 
+  const [showError, setShowError] = useState(false)
+
   const [data, setData] = useState({
-    email:'',
-    password:''
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: ''
   })
 
   const handleChange = (key, value) => {
@@ -44,6 +37,34 @@ const RegisterScreen = ({ navigation }) => {
       ...prevData,
       [key]: value
     }));
+  };
+
+  const handleRegister = async () => {
+    if (data.email && data.firstName && data.lastName && data.password) {
+      try {
+        const response = await fetch(`http://192.168.190.243:3000/register`, {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const res = await response.json()
+        console.log(res)
+        // Handle successful response
+
+        ToastAndroid.show('User Register Successfully', ToastAndroid.SHORT);
+        
+        navigation.navigate('LoginScreen');
+        
+      } catch (error) {
+        console.log('Network request failed:', error.message);
+        ToastAndroid.show('Failed to register User !TRY AGAIN', ToastAndroid.SHORT);
+      }
+    }
+    else {
+      setShowError(true)
+    }
   };
 
   return (
@@ -59,6 +80,13 @@ const RegisterScreen = ({ navigation }) => {
         <View>
           <Text style={{ fontSize: 28, fontFamily: 'rbold' }}>Register</Text>
         </View>
+
+        {
+          showError && 
+          <View>
+            <Text style={{ color: 'red', textAlign: 'center', }}>Enter All Required Fields</Text>
+          </View>
+        }
 
         <View style={{ marginTop: 20 }}>
           <TextInput
@@ -117,7 +145,7 @@ const RegisterScreen = ({ navigation }) => {
         </View>
         <View style={{ justifyContent: 'center', flexDirection: 'row', marginTop: 20, opacity: 0.65, gap: 8, marginBottom: 20 }}>
           <Text style={{ fontFamily: 'rmedium' }}>Already registered?</Text>
-          <TouchableOpacity activeOpacity={0.8} onPress={handleRegister}>
+          <TouchableOpacity activeOpacity={0.8} onPress={() => { navigation.navigate('LoginScreen'); }}>
             <Text style={{ color: '#FF6C3B', fontFamily: 'rmedium' }}>Login</Text>
           </TouchableOpacity>
         </View>

@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, Text, View, Image, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
+import { FlatList, StyleSheet, Text, View, Image, TouchableOpacity, Alert, ActivityIndicator, ToastAndroid } from 'react-native'
 /* import { useNavigation } from '@react-navigation/native' */
 import React, { useEffect, useState } from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons'
@@ -59,6 +59,7 @@ const HomeScreen = ({ navigation }) => {
   const handleSave = async (data) => {
     /*  var newData = { name: data.name, icon: data.icon } */
     insertData(data);
+    ToastAndroid.show(data.name + ' room added Succesfully', ToastAndroid.SHORT);
 
     await fetchAllData()
       .then((res) => {
@@ -86,6 +87,7 @@ const HomeScreen = ({ navigation }) => {
             onPress: async () => {
               // Perform delete action here
               deleteData(item.id)
+              ToastAndroid.show(item.name + ' deleted Succesfully', ToastAndroid.SHORT);
               setRooms(await fetchAllData())
               console.log('Item deleted');
             },

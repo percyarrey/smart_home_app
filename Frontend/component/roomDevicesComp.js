@@ -1,4 +1,4 @@
-import { Keyboard, StyleSheet, Text, View, TouchableOpacity, Animated } from 'react-native'
+import { Keyboard, StyleSheet, Text, View, TouchableOpacity, Animated, ToastAndroid } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
 
 /* ICONS */
@@ -60,6 +60,7 @@ export default function RoomDevicesComp({ activeItem, otherItems, setRoomItems }
                 ...otherItems
             ]))
             updateData(activeItem.id, activeItem)
+            ToastAndroid.show(activeItem.name+ ' is Power ON', ToastAndroid.SHORT);
         }
         else {
             activeItem.power = 0
@@ -69,6 +70,7 @@ export default function RoomDevicesComp({ activeItem, otherItems, setRoomItems }
                 ...otherItems
             ])) */
             updateData(activeItem.id, activeItem)
+            ToastAndroid.show(activeItem.name + ' is Power OFF', ToastAndroid.SHORT);
         }
     }
 

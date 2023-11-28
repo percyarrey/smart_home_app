@@ -1,3 +1,3 @@
-import profile from '../assets/profile.jpg'
+import profile from '../assets/profile.png'
 
 export {profile}
