@@ -24,6 +24,7 @@ const LoginScreen = ({ navigation }) => {
   const [showError, setShowError] = useState('')
 
   const [data, setData] = useState({
+    name:'',
     email: '',
     password: ''
   })
@@ -39,7 +40,7 @@ const LoginScreen = ({ navigation }) => {
     if (data.email && data.password) {
       setLoading(true)
       try {
-        const response = await fetch(`http://192.168.8.100:3000/login`, {
+        const response = await fetch(`http://172.20.10.11:3000/login`, {
           method: 'POST',
           body: JSON.stringify(data),
           headers: {
@@ -49,6 +50,7 @@ const LoginScreen = ({ navigation }) => {
         const res = await response.json()
         if (res.success == true) {
           ToastAndroid.show('User login Successfully', ToastAndroid.SHORT);
+          await AsyncStorage.setItem('hasLoggedIn', JSON.stringify(data));
           navigation.navigate('Tabs');
 
         } else {

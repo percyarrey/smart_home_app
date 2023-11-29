@@ -50,7 +50,9 @@ export default function App() {
   }, []);
 
   const checkLoginStatus = async () => {
-    const value = await AsyncStorage.getItem('hasLoggedIn');
+    var value = await AsyncStorage.getItem('hasLoggedIn');
+    console.log(value)
+    value = value===null || value ==='' ?false:true
     setHasLoggedIn(value);
   };
 
@@ -60,26 +62,22 @@ export default function App() {
 
   if (!fontsLoaded) return null;
 
-  if (hasLoggedIn) {
-    return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <NavigationContainer>
-          <Stack.Navigator>
-            {!hasLoggedIn && (
-              <Stack.Screen name="LoginScreen" component={LoginScreen}  options={{ headerShown: false }}/>
-            )}
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <Stack.Navigator>
+          {!hasLoggedIn && (
             <Stack.Screen name="LoginScreen" component={LoginScreen}  options={{ headerShown: false }}/>
-            <Stack.Screen name='Tabs' component={Tabs} options={{ headerShown: false }} />
-            <Stack.Screen name='RoomDevices' component={RoomDevices} options={{
-              headerShadowVisible: false,
-              headerTitleStyle: { color: 'black', fontFamily: 'rbold' }
-            }} />
-            <Stack.Screen name="RegisterScreen" component={RegisterScreen}  options={{ headerShown: false }}/>
-          </Stack.Navigator>
-        </NavigationContainer>
-      </SafeAreaView>
-    );
-  } else {
-    return <LoginScreen />
-  }
+          )}
+          <Stack.Screen name='Tabs' component={Tabs} options={{ headerShown: false }} />
+          <Stack.Screen name='RoomDevices' component={RoomDevices} options={{
+            headerShadowVisible: false,
+            headerTitleStyle: { color: 'black', fontFamily: 'rbold' }
+          }} />
+          <Stack.Screen name="RegisterScreen" component={RegisterScreen}  options={{ headerShown: false }}/>
+          
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaView>
+  );
 }

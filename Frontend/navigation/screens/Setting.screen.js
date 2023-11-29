@@ -4,6 +4,7 @@ import React from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons'
 
 const SettingScreen = () => {
+  
   return (
     <View style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: 15 }}>
       <View style={{ marginTop: 5, borderBottomWidth: 2, paddingBottom: 8, borderColor: "#CFCFCF" }}>

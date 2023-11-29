@@ -41,7 +41,7 @@ const RegisterScreen = ({ navigation }) => {
     if (data.email && data.name && data.password) {
       setLoading(true)
       try {
-        const response = await fetch(`http://192.168.8.100:3000/register`, {
+        const response = await fetch(`http://172.20.10.11:3000/register`, {
           method: 'POST',
           body: JSON.stringify(data),
           headers: {
